@@ -108,7 +108,7 @@ namespace BARSReaderGUI
                         audioAssets[i].assetType = reader.ReadSizedString(4);
                         reader.Position -= 4;
 
-                        
+
                         if (audioAssets[i].assetType != "BWAV")
                         {
                             //FSTPs are prefetch assets.
@@ -142,6 +142,8 @@ namespace BARSReaderGUI
 
                     this.Text = $"BARSReaderGUI - {fileDialog.SafeFileName} - {assetcount} Assets";
                     MessageBox.Show("Successfully read " + assetcount + " assets.");
+
+                    extractAllButton.Enabled = true;
                 }
             }
         }
@@ -186,7 +188,7 @@ namespace BARSReaderGUI
                 default:
                     break;
             }// Change this later to handle other audio formats
-            
+
             saveFileDialog.Title = "Extract Audio";
             saveFileDialog.FileName = audioAssets[AssetListBox.SelectedIndex].amtaData.assetName;
             saveFileDialog.RestoreDirectory = true;
@@ -251,10 +253,33 @@ namespace BARSReaderGUI
             }
             return sortedAssets;
         }
-    }
-    public class AssetOffsetPair
-    {
-        public uint amtaoffset;
-        public uint bwavoffset;
+
+        private void extractAllButton_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog saveFileDialog = new FolderBrowserDialog();
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                for (int i = 0; i < audioAssets.Count; i++)
+                {
+                    switch (audioAssets[i].assetType)
+                    {
+                        case "BWAV":
+                            File.WriteAllBytes(Path.Combine(saveFileDialog.SelectedPath, audioAssets[i].amtaData.assetName + ".bwav"), audioAssets[i].assetData);
+                            break;
+                        case "FWAV":
+                            File.WriteAllBytes(Path.Combine(saveFileDialog.SelectedPath, audioAssets[i].amtaData.assetName + ".bfwav"), audioAssets[i].assetData);
+                            break;
+                        case "FSTP":
+                            File.WriteAllBytes(Path.Combine(saveFileDialog.SelectedPath, audioAssets[i].amtaData.assetName + ".bfstp"), audioAssets[i].assetData);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                MessageBox.Show("all assets extracted successfully.");
+            }
+        }
     }
 }
